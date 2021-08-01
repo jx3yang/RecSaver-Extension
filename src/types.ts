@@ -15,11 +15,24 @@ export enum RequestType {
   ERROR = 'ERROR',
 }
 
+export enum ContentType {
+  ROOT = 'ROOT',
+  SIDEBAR = 'SIDEBAR',
+  ENDSCREEN = 'ENDSCREEN',
+}
+
 export type Request =
-  | { id: string, type: RequestType.CONTENTS, data: Content[] }
+  | { id: string, type: RequestType.CONTENTS, contentType: ContentType, data: Content[] }
   | { id: string, type: RequestType.ERROR, data: any }
+
+type RecommendationsEntry = {
+  id: string
+  contents: Content[]
+}
 
 export type CacheModel = {
   size: number
-  history: { id: string, contents: Content[] }[]
+  rootRecommendations: RecommendationsEntry[]
+  sideBarRecommendations: RecommendationsEntry[]
+  endScreenRecommendations: RecommendationsEntry[]
 }

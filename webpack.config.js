@@ -28,6 +28,7 @@ module.exports = {
   entry: {
     Popup: './src/pages/Popup/Popup.tsx',
     sendContentsFromRoot: './src/scripts/sendContentsFromRoot.ts',
+    sendContentsFromWatch: './src/scripts/sendContentsFromWatch.ts',
     background: './src/scripts/background.ts',
   },
   output: {

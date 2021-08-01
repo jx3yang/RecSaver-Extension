@@ -1,22 +1,32 @@
 import { CACHE_SIZE, CONTENTS_KEY } from '../constants'
-import { CacheModel, Request, RequestType } from '../types'
+import { CacheModel, Content, ContentType, Request, RequestType } from '../types'
 import { addElementToFront, moveElementToFront, removeLastElement } from '../utils'
 
 chrome.runtime.onInstalled.addListener(() => {
   const initialCache: CacheModel = {
     size: CACHE_SIZE,
-    history: [],
+    rootRecommendations: [],
+    sideBarRecommendations: [],
+    endScreenRecommendations: [],
   }
   chrome.storage.local.set({ [CONTENTS_KEY]: initialCache })
 })
 
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-  if (changeInfo.status === 'complete' && tab.url === 'https://www.youtube.com/') {
-    chrome.scripting.executeScript({
-      target: { tabId },
-      files: ['./sendContentsFromRoot.js'],
-    })
-      .catch((e) => console.error(e))
+  if (changeInfo.status === 'complete') {
+    let script: string | null = null
+    if (tab.url === 'https://www.youtube.com/') {
+      script = './sendContentsFromRoot.js'
+    } else if (/^https\:\/\/www\.youtube\.com\/watch*/.test(tab.url || '')) {
+      script = './sendContentsFromWatch.js'
+    }
+
+    if (script)
+      chrome.scripting.executeScript({
+        target: { tabId },
+        files: [script],
+      })
+        .catch((e) => console.error(e))
   }
 })
 
@@ -25,26 +35,43 @@ chrome.runtime.onMessage.addListener((request: Request, sender) => {
   switch (requestType) {
     case RequestType.CONTENTS: {
       // use a LRU caching strategy
-      const { id: requestId } = request
+      // @ts-ignore
+      const { id: requestId, contentType } = request
       const { data } = request
       chrome.storage.local.get([CONTENTS_KEY], (store) => {
-        const { size, history }: CacheModel = store[CONTENTS_KEY]
+        const cache: CacheModel = store[CONTENTS_KEY]
+        const { size } = cache
+        const key = (() => {
+          switch (contentType) {
+            case ContentType.ROOT:
+              return 'rootRecommendations'
+            case ContentType.SIDEBAR:
+              return 'sideBarRecommendations'
+            case ContentType.ENDSCREEN:
+              return 'endScreenRecommendations'
+            default:
+              return ''
+          }
+        })()
+        if (!key) return
+        const history = cache[key]
         const idx = history.findIndex(({ id }) => id === requestId)
         if (idx === -1) {
           const newHistory = addElementToFront(history, { id: requestId, contents: data })
           chrome.storage.local.set({
             [CONTENTS_KEY]: {
-              size,
-              history: newHistory.length <= size ? newHistory : removeLastElement(newHistory),
+              ...cache,
+              [key]: newHistory.length <= size ? newHistory : removeLastElement(newHistory),
             },
           })
         } else {
           const newHistory = moveElementToFront(history, idx)
-          newHistory[0].contents = data
+          const oldContents = newHistory[0].contents as Content[]
+          newHistory[0].contents = data.length >= oldContents.length ? data : oldContents
           chrome.storage.local.set({
             [CONTENTS_KEY]: {
-              size,
-              history: newHistory,
+              ...cache,
+              [key]: newHistory,
             },
           })
         }
