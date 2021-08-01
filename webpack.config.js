@@ -27,7 +27,7 @@ module.exports = {
   mode: 'production',
   entry: {
     Popup: './src/pages/Popup/Popup.tsx',
-    saveRecommendations: './src/scripts/saveRecommendations.ts',
+    sendContentsFromRoot: './src/scripts/sendContentsFromRoot.ts',
     background: './src/scripts/background.ts',
   },
   output: {

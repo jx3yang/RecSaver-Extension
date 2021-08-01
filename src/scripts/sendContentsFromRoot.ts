@@ -1,6 +1,6 @@
 import { Content, RequestType, Request } from '../types'
 
-const parseContent = (content: HTMLElement): Content | null => {
+const parseContent = (content: Element): Content | null => {
   const thumbnail = content.querySelector('#thumbnail') as any
   if (!thumbnail) return null
   const videoUrl = thumbnail.href
@@ -13,8 +13,20 @@ const parseContent = (content: HTMLElement): Content | null => {
   }
 }
 
+const getContents = () => {
+  const contentsNode = document.getElementById('primary')?.querySelector('#contents')
+  const trySelector = (selector: string): Element[] => [...(contentsNode?.querySelectorAll(selector) || [])]
+
+  const selectors = [
+    '#content',
+    'ytd-grid-video-renderer',
+  ]
+
+  return selectors.reduce((acc, selector) => acc.length > 0 ? acc : trySelector(selector), [] as Element[])
+}
+
 const parseContents = (): Content[] =>
-  ([...document.getElementById('primary')?.querySelector('#contents')?.querySelectorAll('#content') || []] as HTMLElement[])
+  getContents()
     .map(parseContent)
     .filter((content) => content && content.thumbnailUrl) as Content[]
 
