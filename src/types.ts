@@ -15,6 +15,10 @@ export enum RequestType {
   ERROR = 'ERROR',
 }
 
+export enum MessageType {
+  HISTORY_CHANGE = 'HISTORY_CHANGE',
+}
+
 export enum ContentType {
   ROOT = 'ROOT',
   SIDEBAR = 'SIDEBAR',
@@ -25,8 +29,12 @@ export type Request =
   | { id: string, type: RequestType.CONTENTS, contentType: ContentType, data: Content[] }
   | { id: string, type: RequestType.ERROR, data: any }
 
-type RecommendationsEntry = {
-  id: string
+export type Message =
+  | { type: MessageType.HISTORY_CHANGE, forwardBack: boolean }
+
+export type RecommendationsEntry = {
+  listenerId: string
+  tabId: number
   contents: Content[]
 }
 

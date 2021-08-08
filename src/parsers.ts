@@ -40,6 +40,7 @@ const parseContent = (content: Element): Content | null => {
       uploadedTime: isLive ? 'LIVE' : uploadedTime || '',
     }
   } catch (e) {
+    console.error(e)
     return null
   }
 }
@@ -69,7 +70,7 @@ const parseEndScreenContent = (content: Element): Content | null => {
   }
 }
 
-const defaultFilter = ({ thumbnailUrl, videoUrl }: Content) => !!thumbnailUrl && !!videoUrl
+const defaultFilter = ({ thumbnailUrl, videoUrl, channelName }: Content) => !!thumbnailUrl && !!videoUrl && !channelName.startsWith('\n')
 
 const baseParseContents = (getContentNodes: () => Element[], parse: (element: Element) => Content | null, f: (content: Content) => boolean): Content[] =>
   getContentNodes()

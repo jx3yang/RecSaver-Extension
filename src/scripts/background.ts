@@ -1,6 +1,6 @@
 import { CACHE_SIZE, CONTENTS_KEY } from '../constants'
-import { CacheModel, Content, ContentType, Request, RequestType } from '../types'
-import { addElementToFront, moveElementToFront, removeLastElement } from '../utils'
+import { CacheModel, Content, ContentType, Message, MessageType, RecommendationsEntry, Request, RequestType } from '../types'
+import { addElementToFront, isSubset, moveElementToFront, removeLastElement } from '../utils'
 
 chrome.runtime.onInstalled.addListener(() => {
   const initialCache: CacheModel = {
@@ -12,32 +12,29 @@ chrome.runtime.onInstalled.addListener(() => {
   chrome.storage.local.set({ [CONTENTS_KEY]: initialCache })
 })
 
-chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-  if (changeInfo.status === 'complete') {
-    let script: string | null = null
-    if (tab.url === 'https://www.youtube.com/') {
-      script = './sendContentsFromRoot.js'
-    } else if (/^https\:\/\/www\.youtube\.com\/watch*/.test(tab.url || '')) {
-      script = './sendContentsFromWatch.js'
+chrome.webNavigation.onHistoryStateUpdated.addListener((details) => {
+  const { tabId, url, transitionQualifiers } = details
+  if (/^https\:\/\/www\.youtube\.com\/*/.test(url)) {
+    const message: Message = {
+      type: MessageType.HISTORY_CHANGE,
+      forwardBack: transitionQualifiers.includes('forward_back'),
     }
-
-    if (script)
-      chrome.scripting.executeScript({
-        target: { tabId },
-        files: [script],
-      })
-        .catch((e) => console.error(e))
+    chrome.tabs.sendMessage(tabId, message)
   }
 })
 
 chrome.runtime.onMessage.addListener((request: Request, sender) => {
   const { type: requestType } = request
+  const { tab } = sender
+  if (!tab || !tab.id) return
+  const { id: currentTabId } = tab
   switch (requestType) {
     case RequestType.CONTENTS: {
       // use a LRU caching strategy
       // @ts-ignore
       const { id: requestId, contentType } = request
       const { data } = request
+      if (data.length === 0) return
       chrome.storage.local.get([CONTENTS_KEY], (store) => {
         const cache: CacheModel = store[CONTENTS_KEY]
         const { size } = cache
@@ -55,23 +52,23 @@ chrome.runtime.onMessage.addListener((request: Request, sender) => {
         })()
         if (!key) return
         const history = cache[key]
-        const idx = history.findIndex(({ id }) => id === requestId)
-        if (idx === -1) {
-          const newHistory = addElementToFront(history, { id: requestId, contents: data })
-          chrome.storage.local.set({
-            [CONTENTS_KEY]: {
-              ...cache,
-              [key]: newHistory.length <= size ? newHistory : removeLastElement(newHistory),
-            },
-          })
-        } else {
+        const idx = history.findIndex(({ listenerId, tabId }) => listenerId === requestId && tabId === currentTabId)
+        if (idx !== -1 && isSubset(history[idx].contents, data, (content: Content) => content.videoUrl)) {
           const newHistory = moveElementToFront(history, idx)
-          const oldContents = newHistory[0].contents as Content[]
-          newHistory[0].contents = data.length >= oldContents.length ? data : oldContents
+          newHistory[0].contents = data
           chrome.storage.local.set({
             [CONTENTS_KEY]: {
               ...cache,
               [key]: newHistory,
+            },
+          })
+        } else {
+          const newEntry: RecommendationsEntry = { listenerId: requestId, contents: data, tabId: currentTabId }
+          const newHistory = addElementToFront(history, newEntry)
+          chrome.storage.local.set({
+            [CONTENTS_KEY]: {
+              ...cache,
+              [key]: newHistory.length <= size ? newHistory : removeLastElement(newHistory),
             },
           })
         }
