@@ -1,6 +1,6 @@
-import { CACHE_SIZE, CONTENTS_KEY } from '../constants'
-import { CacheModel, Content, ContentType, Message, MessageType, RecommendationsEntry, Request, RequestType } from '../types'
-import { addElementToFront, isSubset, moveElementToFront, removeLastElement } from '../utils'
+import { CACHE_SIZE, CONTENTS_KEY } from '@/lib/constants'
+import { CacheModel, Content, ContentType, Message, MessageType, RecommendationsEntry, Request, RequestType } from '@/lib/types'
+import { addElementToFront, isSubset, moveElementToFront, removeLastElement } from '@/lib/utils'
 
 chrome.runtime.onInstalled.addListener(() => {
   const initialCache: CacheModel = {

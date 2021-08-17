@@ -1,6 +1,6 @@
-import { startObservers } from '../bootstrap'
-import { getContentsParser, getEndScreenContentsParser } from '../parsers'
-import { ContentType, Message, MessageType } from '../types'
+import { startObservers } from '@/lib/bootstrap'
+import { getContentsParser, getEndScreenContentsParser } from '@/lib/parsers'
+import { ContentType, Message, MessageType } from '@/lib/types'
 
 const getRootContentsNode = () => document.querySelector('#primary #contents')
 const getSidebarContentsNode = () => document.querySelector('#secondary #related #contents') || document.querySelector('#primary #related #contents')

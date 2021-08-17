@@ -44,3 +44,8 @@ export type CacheModel = {
   sideBarRecommendations: RecommendationsEntry[]
   endScreenRecommendations: RecommendationsEntry[]
 }
+
+export enum VideoListStyle {
+  POPUP = 'POPUP',
+  OPTIONS = 'OPTIONS',
+}

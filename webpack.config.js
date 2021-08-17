@@ -11,9 +11,14 @@ const tsRule = {
 
 const plugins = [
   new HTMLWebpackPlugin({
-    template: './src/pages/Popup/Popup.html',
+    template: './src/pages/Popup/index.html',
     filename: 'Popup.html',
     chunks: ['Popup'],
+  }),
+  new HTMLWebpackPlugin({
+    template: './src/pages/Options/index.html',
+    filename: 'Options.html',
+    chunks: ['Options'],
   }),
   new CopyWebpackPlugin({
     patterns: [
@@ -26,7 +31,8 @@ const plugins = [
 module.exports = {
   mode: 'production',
   entry: {
-    Popup: './src/pages/Popup/Popup.tsx',
+    Popup: './src/pages/Popup/index.tsx',
+    Options: './src/pages/Options/index.tsx',
     sendContents: './src/scripts/sendContents.ts',
     background: './src/scripts/background.ts',
   },
@@ -39,6 +45,9 @@ module.exports = {
   },
   resolve: {
     extensions: ['.ts', '.tsx', '.js'],
+    alias: {
+      "@": resolve(__dirname, 'src/'),
+    }
   },
   plugins,
 }

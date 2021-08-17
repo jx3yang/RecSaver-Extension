@@ -6,6 +6,7 @@
   "action": {
     "default_popup": "Popup.html"
   },
+  "options_page": "Options.html",
   "background": {
     "service_worker": "background.js"
   },
