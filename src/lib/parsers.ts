@@ -60,8 +60,8 @@ const parseEndScreenContent = (content: Element): Content | null => {
       videoUrl,
       videoTitle,
       channelUrl: '',
-      channelName,
-      views,
+      channelName: channelName || '',
+      views: views || '',
       uploadedTime: isLive ? 'LIVE' : '',
       channelIconUrl: '',
     }

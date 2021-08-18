@@ -1,5 +1,5 @@
 import { Content, VideoListStyle } from '@/lib/types'
-import { Box, Heading, HStack, Image, LinkBox, LinkOverlay, Text } from '@chakra-ui/react'
+import { Box, Flex, Heading, HStack, Image, LinkBox, LinkOverlay, Text } from '@chakra-ui/react'
 
 type Props = {
   content: Content
@@ -16,15 +16,19 @@ export const VideoCard: React.FC<Props> = (
     <LinkBox>
       <HStack>
         <Image src={thumbnailUrl} alt={videoTitle} htmlHeight={94} htmlWidth={168} />
-        <Box>
-          <LinkOverlay href={videoUrl}>
-            <Heading noOfLines={2} fontSize='sm'>
-              {videoTitle}
-            </Heading>
-          </LinkOverlay>
-          <Text noOfLines={1} mt={4} fontSize='xs'>{channelName}</Text>
-          <Text noOfLines={2} fontSize='xs'>{views} • {uploadedTime}</Text>
-        </Box>
+        <Flex direction='column' h={94}>
+          <Box mb='auto !important'>
+            <LinkOverlay href={videoUrl}>
+              <Heading noOfLines={2} fontSize='sm'>
+                {videoTitle}
+              </Heading>
+            </LinkOverlay>
+          </Box>
+          <Box mt='auto !important'>
+            <Text color='gray.500' noOfLines={1} mt={4} fontSize='xs'>{channelName}</Text>
+            <Text color='gray.500' noOfLines={1} fontSize='xs'>{views} • {uploadedTime}</Text>
+          </Box>
+        </Flex>
       </HStack>
     </LinkBox>
   </Box>

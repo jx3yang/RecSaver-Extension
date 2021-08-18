@@ -1,5 +1,5 @@
 import { Content, VideoListStyle } from '@/lib/types'
-import { VStack } from '@chakra-ui/react'
+import { Center, Heading, VStack } from '@chakra-ui/react'
 import { VideoCard } from '../VideoCard'
 
 type Props = {
@@ -8,7 +8,15 @@ type Props = {
 }
 
 export const VideoList: React.FC<Props> = ({ contents, listStyle }) => (
-  <VStack spacing={4}>
-    {contents.map((content) => <VideoCard content={content} listStyle={listStyle} />)}
-  </VStack>
+  contents.length > 0 ? (
+    <VStack spacing={4}>
+      {contents.map((content) => <VideoCard content={content} listStyle={listStyle} />)}
+    </VStack>
+  ) : (
+    <Center w='100%' h='400px'>
+      <Heading color='gray.300'>
+        No history yet
+      </Heading>
+    </Center>
+  )
 )
