@@ -9,7 +9,10 @@ chrome.runtime.onInstalled.addListener(() => {
     sideBarRecommendations: [],
     endScreenRecommendations: [],
   }
-  chrome.storage.local.set({ [CONTENTS_KEY]: initialCache })
+  chrome.storage.local.get([CONTENTS_KEY], (store) => {
+    if (!store[CONTENTS_KEY])
+      chrome.storage.local.set({ [CONTENTS_KEY]: initialCache })
+  })
 })
 
 chrome.webNavigation.onHistoryStateUpdated.addListener((details) => {
