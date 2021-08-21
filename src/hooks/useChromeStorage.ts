@@ -1,11 +1,16 @@
 import { useEffect, useState } from 'react'
 
-export function useChromeStorage<T>(key: string) {
+type StorageGetter = (store: { [key: string]: string }) => any
+
+export function useChromeStorage<T>(key: string, storageGetter?: StorageGetter) {
   const [value, setValue] = useState<T>()
 
   useEffect(() => {
     chrome.storage.local.get([key], (store) => {
-      setValue(store[key] as T)
+      if (storageGetter)
+        setValue(storageGetter(store) as T)
+      else
+        setValue(store[key] as T)
     })
   }, [])
 

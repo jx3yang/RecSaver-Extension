@@ -1,16 +1,16 @@
-import { RecommendationsEntry, VideoListStyle } from '@/lib/types'
+import { Content, VideoListStyle } from '@/lib/types'
 import { VideoList } from '@/components/VideoList'
 import { useState } from 'react'
 import { Box, Center, HStack, Spinner } from '@chakra-ui/react'
 import { Pagination } from '../Pagination'
 
 type Props = {
-  history?: RecommendationsEntry[]
+  contents?: Content[]
   listStyle: VideoListStyle
 }
 
-export const VideoPagination: React.FC<Props> = ({ history, listStyle }) => {
-  if (!history)
+export const VideoPagination: React.FC<Props> = ({ contents, listStyle }) => {
+  if (!contents)
     return (
       <Center w='100%' h='400px'>
         <Spinner
@@ -24,12 +24,15 @@ export const VideoPagination: React.FC<Props> = ({ history, listStyle }) => {
     )
 
   const [currentPage, setCurrentPage] = useState(1)
-  const maxPage = history.length
+  const itemsPerPage = 40
+  const maxPage = Math.ceil(contents.length / itemsPerPage)
+  
+  const paginatedContents = new Array(maxPage).fill(null).map((_, index) => contents.slice(index * itemsPerPage, (index + 1) * itemsPerPage))
 
   return (
     <>
       <Box pb={50}>
-        <VideoList contents={history[currentPage - 1]?.contents || []} listStyle={listStyle} />
+        <VideoList contents={paginatedContents[currentPage-1] || []} listStyle={listStyle} />
       </Box>
       <HStack
         position='fixed'

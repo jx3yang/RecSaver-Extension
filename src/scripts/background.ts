@@ -1,17 +1,14 @@
-import { CACHE_SIZE, CONTENTS_KEY } from '@/lib/constants'
-import { CacheModel, Content, ContentType, Message, MessageType, RecommendationsEntry, Request, RequestType } from '@/lib/types'
-import { addElementToFront, isSubset, moveElementToFront, removeLastElement } from '@/lib/utils'
+import { CONTENTS_KEY } from '@/lib/constants'
+import { VersionedData, ContentType, Message, MessageType, Request, RequestType, AbstractVersionedData } from '@/lib/types'
+import { runMigrations } from './migrations'
 
 chrome.runtime.onInstalled.addListener(() => {
-  const initialCache: CacheModel = {
-    size: CACHE_SIZE,
-    rootRecommendations: [],
-    sideBarRecommendations: [],
-    endScreenRecommendations: [],
-  }
   chrome.storage.local.get([CONTENTS_KEY], (store) => {
-    if (!store[CONTENTS_KEY])
-      chrome.storage.local.set({ [CONTENTS_KEY]: initialCache })
+    const versionedData = store[CONTENTS_KEY] as AbstractVersionedData | undefined
+    const arg = !versionedData || !versionedData.data || !versionedData.metadata.version
+      ? undefined
+      : versionedData
+    runMigrations(arg).then((data) => chrome.storage.local.set({ [CONTENTS_KEY]: data }))
   })
 })
 
@@ -30,17 +27,16 @@ chrome.runtime.onMessage.addListener((request: Request, sender) => {
   const { type: requestType } = request
   const { tab } = sender
   if (!tab || !tab.id) return
-  const { id: currentTabId } = tab
   switch (requestType) {
     case RequestType.CONTENTS: {
       // use a LRU caching strategy
       // @ts-ignore
-      const { id: requestId, contentType } = request
+      const { contentType } = request
       const { data } = request
       if (data.length === 0) return
       chrome.storage.local.get([CONTENTS_KEY], (store) => {
-        const cache: CacheModel = store[CONTENTS_KEY]
-        const { size } = cache
+        const versionedData: VersionedData = store[CONTENTS_KEY]
+        const { data: cache } = versionedData
         const key = (() => {
           switch (contentType) {
             case ContentType.ROOT:
@@ -54,27 +50,27 @@ chrome.runtime.onMessage.addListener((request: Request, sender) => {
           }
         })()
         if (!key) return
+        const { size } = cache
+        const contentsSet = new Set<string>()
+        // @ts-ignore
+        const contents = data.filter(({ videoUrl }) => {
+          if (!contentsSet.has(videoUrl)) {
+            contentsSet.add(videoUrl)
+            return true
+          }
+          return false
+        })
         const history = cache[key]
-        const idx = history.findIndex(({ listenerId, tabId }) => listenerId === requestId && tabId === currentTabId)
-        if (idx !== -1 && isSubset(history[idx].contents, data, (content: Content) => content.videoUrl)) {
-          const newHistory = moveElementToFront(history, idx)
-          newHistory[0].contents = data
-          chrome.storage.local.set({
-            [CONTENTS_KEY]: {
+        const newHistory = [...contents, ...history.filter(({ videoUrl }) => !contentsSet.has(videoUrl))].slice(0, size)
+        chrome.storage.local.set({
+          [CONTENTS_KEY]: {
+            ...versionedData,
+            data: {
               ...cache,
               [key]: newHistory,
             },
-          })
-        } else {
-          const newEntry: RecommendationsEntry = { listenerId: requestId, contents: data, tabId: currentTabId }
-          const newHistory = addElementToFront(history, newEntry)
-          chrome.storage.local.set({
-            [CONTENTS_KEY]: {
-              ...cache,
-              [key]: newHistory.length <= size ? newHistory : removeLastElement(newHistory),
-            },
-          })
-        }
+          }
+        })
       })
       break
     }

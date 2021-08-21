@@ -2,11 +2,12 @@ import { render } from 'react-dom'
 import { ChakraProvider, Tab, TabList, TabPanel, TabPanels, Tabs } from '@chakra-ui/react'
 import { useChromeStorage } from '@/hooks/useChromeStorage'
 import { CONTENTS_KEY } from '@/lib/constants'
-import { CacheModel, VideoListStyle } from '@/lib/types'
+import { VersionedData, VideoListStyle } from '@/lib/types'
 import { VideoPagination } from '@/components/VideoPagination'
 
 const Popup: React.FC = () => {
-  const { value: recommendationHistory } = useChromeStorage<CacheModel>(CONTENTS_KEY)
+  const { value: versionedData } = useChromeStorage<VersionedData>(CONTENTS_KEY)
+  const { data: recommendationHistory } = versionedData || { data: undefined }
 
   return (
     <ChakraProvider>
@@ -20,19 +21,19 @@ const Popup: React.FC = () => {
         <TabPanels>
           <TabPanel>
             <VideoPagination
-              history={recommendationHistory?.rootRecommendations}
+              contents={recommendationHistory?.rootRecommendations}
               listStyle={VideoListStyle.POPUP}
             />
           </TabPanel>
           <TabPanel>
             <VideoPagination
-              history={recommendationHistory?.sideBarRecommendations}
+              contents={recommendationHistory?.sideBarRecommendations}
               listStyle={VideoListStyle.POPUP}
             />
           </TabPanel>
           <TabPanel>
             <VideoPagination
-              history={recommendationHistory?.endScreenRecommendations}
+              contents={recommendationHistory?.endScreenRecommendations}
               listStyle={VideoListStyle.POPUP}
             />
           </TabPanel>

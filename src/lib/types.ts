@@ -32,17 +32,22 @@ export type Request =
 export type Message =
   | { type: MessageType.HISTORY_CHANGE, forwardBack: boolean }
 
-export type RecommendationsEntry = {
-  listenerId: string
-  tabId: number
-  contents: Content[]
+export type HistoryModel = {
+  size: number
+  rootRecommendations: Content[]
+  sideBarRecommendations: Content[]
+  endScreenRecommendations: Content[]
 }
 
-export type CacheModel = {
-  size: number
-  rootRecommendations: RecommendationsEntry[]
-  sideBarRecommendations: RecommendationsEntry[]
-  endScreenRecommendations: RecommendationsEntry[]
+export interface AbstractVersionedData {
+  metadata: {
+    version: number
+  }
+  data: any
+}
+
+export interface VersionedData extends AbstractVersionedData {
+  data: HistoryModel
 }
 
 export enum VideoListStyle {
