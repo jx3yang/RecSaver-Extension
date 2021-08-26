@@ -1,10 +1,13 @@
 {
   "name": "Recommendations Saver",
-  "description": "Saves your previous Youtube Recommendations",
+  "description": "Saves your historical YouTube recommendations",
   "version": "0.1.0",
   "manifest_version": 3,
   "action": {
-    "default_popup": "Popup.html"
+    "default_popup": "Popup.html",
+    "default_icon": {
+      "128": "128.png"
+    }
   },
   "options_page": "Options.html",
   "background": {
