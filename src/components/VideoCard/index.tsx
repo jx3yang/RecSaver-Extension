@@ -15,7 +15,12 @@ export const VideoCard: React.FC<Props> = (
   <Box h={94} w='100%'>
     <LinkBox>
       <HStack>
-        <Image src={thumbnailUrl} alt={videoTitle} htmlHeight={94} htmlWidth={168} />
+        <Image
+          src={thumbnailUrl}
+          alt={videoTitle}
+          htmlHeight={94}
+          htmlWidth={168}
+        />
         <Flex direction='column' h={94}>
           <Box mb='auto !important'>
             <LinkOverlay href={videoUrl} isExternal>

@@ -3,6 +3,7 @@ import { VideoList } from '@/components/VideoList'
 import { useState } from 'react'
 import { Box, Center, HStack, Spinner } from '@chakra-ui/react'
 import { Pagination } from '../Pagination'
+import { useBgColorValue } from '@/hooks/useBgColorValue'
 
 type Props = {
   contents?: Content[]
@@ -24,6 +25,7 @@ export const VideoPagination: React.FC<Props> = ({ contents, listStyle }) => {
     )
 
   const [currentPage, setCurrentPage] = useState(1)
+  const bgColor = useBgColorValue()
   const itemsPerPage = 40
   const maxPage = Math.ceil(contents.length / itemsPerPage)
   
@@ -40,7 +42,7 @@ export const VideoPagination: React.FC<Props> = ({ contents, listStyle }) => {
         left={0}
         w='100%'
         h={50}
-        bgColor='white'
+        bgColor={bgColor}
         zIndex={20}
         borderTop='1px'
         borderColor='gray.300'
