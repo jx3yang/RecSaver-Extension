@@ -63,7 +63,8 @@ const {
 )
 
 chrome.runtime.onMessage.addListener((request: Message) => {
-  if (request.type === MessageType.HISTORY_CHANGE && history.length !== historyLength) {
+  const { type: requestType, forwardBack } = request
+  if ((requestType === MessageType.HISTORY_CHANGE && history.length !== historyLength) || forwardBack) {
     historyLength = history.length
     currentUrl = window.location.href
 
